@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 /* Keep the initial light design stable, even when the device uses dark mode. */
-main.theme-light{color-scheme:light}
+html,body,main.theme-light{color-scheme:only light}
 
 /* Compact touch controls and floating companion for small phone screens. */
 @media(max-width:560px){
