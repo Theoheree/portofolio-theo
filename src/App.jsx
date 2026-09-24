@@ -68,6 +68,7 @@ function App() {
   const copyEmail = async () => { try { await navigator.clipboard.writeText('hello@theo.dev') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
   useEffect(() => { const onKey = (event) => event.key === 'Escape' && setMenuOpen(false); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
   useEffect(() => {
+    const loadingStartedAt = performance.now()
     let windowLoaded = document.readyState === 'complete'
     let fontsLoaded = !document.fonts
     let resourcesReady = windowLoaded && fontsLoaded
@@ -79,7 +80,8 @@ function App() {
 
     const progressTimer = window.setInterval(() => {
       setIntroProgress((progress) => {
-        const targetProgress = resourcesReady ? 100 : 88
+        const canEnter = resourcesReady && performance.now() - loadingStartedAt >= 3000
+        const targetProgress = canEnter ? 100 : 88
         const nextProgress = Math.min(targetProgress, progress + Math.max(1, Math.ceil((targetProgress - progress) / 11)))
         if (nextProgress === 100) {
           window.clearInterval(progressTimer)
@@ -94,6 +96,13 @@ function App() {
       window.removeEventListener('load', onLoad)
     }
   }, [])
+  useEffect(() => {
+    if (introDismissed) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [introDismissed])
   useEffect(() => {
     const updateToolFocusSize = () => {
       const toolbox = document.getElementById('tools')

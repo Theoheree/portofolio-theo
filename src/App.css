@@ -2,17 +2,36 @@
 
 /* Keep the initial light design stable, even when the device uses dark mode. */
 html,body,main.theme-light{color-scheme:only light}
+.intro-loader.intro-loader{background:#f5f3ed;color:#111312}
+.intro-loader.intro-loader::before{background:radial-gradient(circle,#7859ff36 0 8%,#7859ff12 35%,transparent 67%)}
+.intro-loader.intro-loader::after{background:radial-gradient(circle,#d9ff3680,transparent 68%)}
+.intro-loader.intro-loader .intro-brand{color:#111312}.intro-loader.intro-loader .intro-brand span{color:#7859ff}
+.intro-loader.intro-loader .intro-kicker,.intro-loader.intro-loader .intro-progress-meta{color:#65675f}
+.intro-loader.intro-loader h1{color:#111312}.intro-loader.intro-loader h1 em{color:#7859ff}
+.intro-loader.intro-loader .intro-copy{color:#575954}
+.intro-loader.intro-loader .intro-progress{background:#dcdad2;box-shadow:0 0 0 1px #11131212}.intro-loader.intro-loader .intro-progress i{background:linear-gradient(90deg,#7859ff,#d9ff36);box-shadow:0 0 18px #7859ff55}
+.intro-loader.intro-loader .intro-progress-meta b{color:#7859ff}
 .intro-loader .intro-pull i{transform:translateY(-50%)}
 .intro-loader .intro-pull i{left:13px;right:auto}
 .intro-loader .intro-loader-content .intro-pull::after{left:54px;right:auto;animation:intro-pull-arrows-left-right 1.05s ease-in-out infinite}
 @keyframes intro-pull-arrows-left-right{0%{opacity:0;transform:translate(0,-50%)}20%{opacity:.25}58%{opacity:1;transform:translate(128px,-50%)}100%{opacity:0;transform:translate(166px,-50%)}}
+.intro-loader .intro-loader-content .intro-pull::after{content:none;animation:none}
+.intro-loader .intro-loader-content .intro-pull span{font-size:0;pointer-events:none}
+.intro-loader .intro-loader-content .intro-pull span::after{content:'SWIPE TO ENTER';font:11px 'DM Mono',monospace;letter-spacing:.12em}
+.intro-loader .intro-loader-content .intro-pull i{left:clamp(13px,calc(var(--intro-pull) - 8px),calc(100% - 43px));right:auto;pointer-events:none;transition:left .06s linear}
+.intro-loader .intro-loader-content .intro-pull span{left:72%;transform:translate(-50%,-50%)}
+.intro-loader .intro-loader-content .intro-pull::after{content:'›››';display:block;left:53px;right:auto;color:#d9ff36;font:700 18px/1 Arial,sans-serif;letter-spacing:1px;animation:swipe-guide 1s ease-in-out infinite}
+.intro-loader .intro-loader-content .intro-pull i{font-size:0}
+.intro-loader .intro-loader-content .intro-pull i::before{content:'';position:absolute;left:8px;top:14px;width:12px;height:2px;border-radius:2px;background:#111312}
+.intro-loader .intro-loader-content .intro-pull i::after{content:'';position:absolute;left:13px;top:10px;width:7px;height:7px;border-top:2px solid #111312;border-right:2px solid #111312;transform:rotate(45deg)}
+@keyframes swipe-guide{0%,100%{opacity:.2;transform:translate(0,-50%)}50%{opacity:1;transform:translate(16px,-50%)}}
 .intro-loader.is-leaving{pointer-events:none;animation:intro-loader-leave .68s cubic-bezier(.65,0,.35,1) forwards}
 .intro-loader.is-leaving .intro-loader-content{animation:intro-content-out .46s cubic-bezier(.2,.8,.2,1) both}
 .intro-loader .intro-pull::after{content:'› › ›';position:absolute;z-index:1;right:51px;top:50%;color:#d9ff36;font:700 20px/1 Arial,sans-serif;letter-spacing:1px;transform:translateY(-50%);animation:intro-pull-arrows .9s ease-in-out infinite}
 @keyframes intro-pull-arrows{0%,100%{opacity:.2;transform:translate(-5px,-50%)}50%{opacity:1;transform:translate(4px,-50%)}}@keyframes intro-loader-leave{0%{opacity:1;clip-path:inset(0 0 0 0)}65%{opacity:1;clip-path:inset(0 0 0 42%)}100%{opacity:0;clip-path:inset(0 0 0 100%)}}@keyframes intro-content-out{to{opacity:0;transform:translateX(-36px) scale(.98)}}
 
 /* Intro loading screen: the portfolio appears only after an intentional pull. */
-.intro-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:hidden;background:#111312;color:#f5f3ed;isolation:isolate}
+.intro-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:hidden;background:#111312;color:#f5f3ed;isolation:isolate;touch-action:none;overscroll-behavior:none}
 .intro-loader::before,.intro-loader::after{content:'';position:absolute;pointer-events:none;border-radius:50%}
 .intro-loader::before{width:min(82vw,820px);height:min(82vw,820px);background:radial-gradient(circle,#7859ff55 0 8%,#7859ff1b 35%,transparent 67%);right:-20vw;top:-31vw;animation:intro-orbit 11s linear infinite}
 .intro-loader::after{width:360px;height:360px;left:-170px;bottom:-180px;background:radial-gradient(circle,#d9ff3652,transparent 68%)}
