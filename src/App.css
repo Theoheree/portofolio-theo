@@ -2,6 +2,31 @@
 
 /* Keep the initial light design stable, even when the device uses dark mode. */
 html,body,main.theme-light{color-scheme:only light}
+.intro-loader .intro-pull i{transform:translateY(-50%)}
+.intro-loader .intro-pull i{left:13px;right:auto}
+.intro-loader .intro-loader-content .intro-pull::after{left:54px;right:auto;animation:intro-pull-arrows-left-right 1.05s ease-in-out infinite}
+@keyframes intro-pull-arrows-left-right{0%{opacity:0;transform:translate(0,-50%)}20%{opacity:.25}58%{opacity:1;transform:translate(128px,-50%)}100%{opacity:0;transform:translate(166px,-50%)}}
+.intro-loader.is-leaving{pointer-events:none;animation:intro-loader-leave .68s cubic-bezier(.65,0,.35,1) forwards}
+.intro-loader.is-leaving .intro-loader-content{animation:intro-content-out .46s cubic-bezier(.2,.8,.2,1) both}
+.intro-loader .intro-pull::after{content:'› › ›';position:absolute;z-index:1;right:51px;top:50%;color:#d9ff36;font:700 20px/1 Arial,sans-serif;letter-spacing:1px;transform:translateY(-50%);animation:intro-pull-arrows .9s ease-in-out infinite}
+@keyframes intro-pull-arrows{0%,100%{opacity:.2;transform:translate(-5px,-50%)}50%{opacity:1;transform:translate(4px,-50%)}}@keyframes intro-loader-leave{0%{opacity:1;clip-path:inset(0 0 0 0)}65%{opacity:1;clip-path:inset(0 0 0 42%)}100%{opacity:0;clip-path:inset(0 0 0 100%)}}@keyframes intro-content-out{to{opacity:0;transform:translateX(-36px) scale(.98)}}
+
+/* Intro loading screen: the portfolio appears only after an intentional pull. */
+.intro-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:hidden;background:#111312;color:#f5f3ed;isolation:isolate}
+.intro-loader::before,.intro-loader::after{content:'';position:absolute;pointer-events:none;border-radius:50%}
+.intro-loader::before{width:min(82vw,820px);height:min(82vw,820px);background:radial-gradient(circle,#7859ff55 0 8%,#7859ff1b 35%,transparent 67%);right:-20vw;top:-31vw;animation:intro-orbit 11s linear infinite}
+.intro-loader::after{width:360px;height:360px;left:-170px;bottom:-180px;background:radial-gradient(circle,#d9ff3652,transparent 68%)}
+.intro-loader-content{position:relative;z-index:1;width:min(540px,calc(100vw - 48px));animation:intro-content-in .65s cubic-bezier(.2,.85,.25,1) both}
+.intro-brand{margin:0 0 54px;color:var(--lime);font:800 25px/1 'DM Mono',monospace;letter-spacing:-2px}.intro-brand span{color:#9b83ff}
+.intro-kicker{margin:0 0 17px;color:#bfc3b9;font:10px 'DM Mono',monospace;letter-spacing:.13em}
+.intro-loader h1{max-width:450px;margin:0;color:#f5f3ed;font-size:clamp(46px,9vw,76px);line-height:.93;letter-spacing:-.07em}.intro-loader h1 em{color:var(--lime);font-style:normal}
+.intro-copy{max-width:390px;margin:20px 0 42px;color:#bdc1b8;font-size:16px;line-height:1.55}
+.intro-progress{height:8px;overflow:hidden;background:#454940;box-shadow:0 0 0 1px #ffffff15}.intro-progress i{display:block;width:var(--intro-progress);height:100%;background:linear-gradient(90deg,var(--lime),#b49dff);box-shadow:0 0 18px #d9ff36aa;transition:width .16s cubic-bezier(.2,.85,.25,1)}
+.intro-progress-meta{display:flex;justify-content:space-between;margin-top:11px;color:#bfc3b9;font:10px 'DM Mono',monospace;letter-spacing:.08em}.intro-progress-meta b{color:var(--lime);font-weight:500}
+.intro-pull{position:relative;width:100%;height:58px;overflow:hidden;margin-top:42px;border:1px solid #d9ff3675;background:#1b1e1a;color:#f5f3ed;cursor:grab;touch-action:none;user-select:none;isolation:isolate;font:11px 'DM Mono',monospace;letter-spacing:.12em}.intro-pull:active{cursor:grabbing}.intro-pull::before{content:'';position:absolute;z-index:-1;inset:0 auto 0 0;width:var(--intro-pull);background:var(--lime);transition:width .05s linear}.intro-pull span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;mix-blend-mode:difference}.intro-pull i{position:absolute;right:13px;top:50%;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--lime);color:#111312;font:22px/1 Arial,sans-serif;transform:translateX(calc(var(--intro-pull) * -.12)) translateY(-50%);transition:transform .08s linear}
+@keyframes intro-content-in{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}@keyframes intro-orbit{to{transform:rotate(360deg)}}
+@media(max-width:560px){.intro-loader-content{width:min(100% - 40px,440px)}.intro-brand{margin-bottom:44px}.intro-loader h1{font-size:48px}.intro-copy{font-size:14px;margin-bottom:34px}.intro-pull{margin-top:34px;height:54px}}
+@media(prefers-reduced-motion:reduce){.intro-loader::before,.intro-loader-content{animation:none}.intro-progress i,.intro-pull::before,.intro-pull i{transition:none}}
 
 /* Compact touch controls and floating companion for small phone screens. */
 @media(max-width:560px){

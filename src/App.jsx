@@ -52,15 +52,48 @@ function App() {
   const [isMascotDragging, setIsMascotDragging] = useState(false)
   const [selectedToolName, setSelectedToolName] = useState('Laravel')
   const [toolFocusCompact, setToolFocusCompact] = useState(false)
+  const [introProgress, setIntroProgress] = useState(0)
+  const [introReady, setIntroReady] = useState(false)
+  const [introDismissed, setIntroDismissed] = useState(false)
+  const [introPull, setIntroPull] = useState(0)
   const spotifyEmbedRef = useRef(null)
   const spotifyControllerRef = useRef(null)
   const mascotDragRef = useRef(null)
   const ignoreMascotClickRef = useRef(false)
+  const introDragRef = useRef(null)
+  const introPullRef = useRef(0)
   const selectedTool = allTools.find((tool) => tool.name === selectedToolName) ?? allTools[0]
   const selectedToolGroup = toolGroups.find((group) => group.tools.some((tool) => tool.name === selectedTool.name)) ?? toolGroups[0]
   const collectOrb = () => { setScore((value) => value + 1); setOrb({ x: 12 + Math.round(Math.random() * 76), y: 16 + Math.round(Math.random() * 65) }) }
   const copyEmail = async () => { try { await navigator.clipboard.writeText('hello@theo.dev') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
   useEffect(() => { const onKey = (event) => event.key === 'Escape' && setMenuOpen(false); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
+  useEffect(() => {
+    let windowLoaded = document.readyState === 'complete'
+    let fontsLoaded = !document.fonts
+    let resourcesReady = windowLoaded && fontsLoaded
+    const updateResourceStatus = () => { resourcesReady = windowLoaded && fontsLoaded }
+    const onLoad = () => { windowLoaded = true; updateResourceStatus() }
+    const waitForFonts = document.fonts?.ready ?? Promise.resolve()
+    waitForFonts.then(() => { fontsLoaded = true; updateResourceStatus() })
+    window.addEventListener('load', onLoad, { once: true })
+
+    const progressTimer = window.setInterval(() => {
+      setIntroProgress((progress) => {
+        const targetProgress = resourcesReady ? 100 : 88
+        const nextProgress = Math.min(targetProgress, progress + Math.max(1, Math.ceil((targetProgress - progress) / 11)))
+        if (nextProgress === 100) {
+          window.clearInterval(progressTimer)
+          setIntroReady(true)
+        }
+        return nextProgress
+      })
+    }, 68)
+
+    return () => {
+      window.clearInterval(progressTimer)
+      window.removeEventListener('load', onLoad)
+    }
+  }, [])
   useEffect(() => {
     const updateToolFocusSize = () => {
       const toolbox = document.getElementById('tools')
@@ -166,6 +199,32 @@ function App() {
   const switchPhotoMode = () => {
     setAppearance(photoMode === 'color')
   }
+  const startIntroPull = (event) => {
+    if (!introReady) return
+    introDragRef.current = { pointerId: event.pointerId, startX: event.clientX }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const moveIntroPull = (event) => {
+    const drag = introDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    const nextPull = Math.max(0, Math.min(100, ((event.clientX - drag.startX) / 180) * 100))
+    introPullRef.current = nextPull
+    setIntroPull(nextPull)
+  }
+  const stopIntroPull = (event) => {
+    const drag = introDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    if (introPullRef.current >= 78) {
+      event.currentTarget.closest('.intro-loader')?.classList.add('is-leaving')
+      window.setTimeout(() => setIntroDismissed(true), 680)
+    }
+    else {
+      introPullRef.current = 0
+      setIntroPull(0)
+    }
+    introDragRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+  }
   const interactWithMascot = () => setMascotStep((step) => (step + 1) % mascotNotes.length)
   const handleTheobitClick = () => {
     if (ignoreMascotClickRef.current) {
@@ -200,7 +259,7 @@ function App() {
     setIsMascotDragging(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
-  return <main className={`${isDark ? 'theme-dark' : 'theme-light'} ${toolFocusCompact ? 'tool-focus-compact' : ''}`}>
+  return <>{!introDismissed && <section className={`intro-loader ${introReady ? 'is-ready' : ''}`} aria-label={introReady ? 'Portfolio is ready. Drag to enter.' : `Loading portfolio: ${introProgress}%`}><div className="intro-loader-content"><p className="intro-brand">THEO<span>./</span></p><p className="intro-kicker">ORA ET LABORA</p><h1>{introReady ? <>Ready to <em>explore?</em></> : <>Building a little <em>magic.</em></>}</h1><p className="intro-copy">Waiting for the portfolio to be ready.</p><div className="intro-progress" aria-hidden="true"><i style={{ '--intro-progress': `${introProgress}%` }} /></div><div className="intro-progress-meta"><span>{introReady ? 'SYSTEM READY' : 'PREPARING PORTFOLIO'}</span><b>{introProgress}%</b></div>{introReady && <button className="intro-pull" style={{ '--intro-pull': `${introPull}%` }} onPointerDown={startIntroPull} onPointerMove={moveIntroPull} onPointerUp={stopIntroPull} onPointerCancel={stopIntroPull} aria-label="Drag right to enter portfolio"><span>DRAG TO ENTER</span><i aria-hidden="true">→</i></button>}</div></section>}<main className={`${isDark ? 'theme-dark' : 'theme-light'} ${toolFocusCompact ? 'tool-focus-compact' : ''}`}>
     <div className="ambient-background" aria-hidden="true"><span className="ambient-grid" /><span className="ambient-orb orb-violet" /><span className="ambient-orb orb-lime" /><span className="ambient-ring" /></div>
     <header className={`nav-wrap ${activeSection === 3 || activeSection === 6 ? 'on-dark-surface' : ''}`}><a className="brand" href="#home" aria-label="Go to homepage">THEO<span>./</span></a><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation">{menuOpen ? '×' : '☰'}</button><nav className={menuOpen ? 'nav open' : 'nav'}><a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#tools" onClick={() => setMenuOpen(false)}>Toolbox</a><a href="#work" onClick={() => setMenuOpen(false)}>Work</a><a href="#credentials" onClick={() => setMenuOpen(false)}>Credentials</a><a href="#play" onClick={() => setMenuOpen(false)}>Playground</a><button className="theme-toggle" onClick={() => setAppearance(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>{isDark ? '☀ LIGHT' : '☾ DARK'}</button><a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Let’s talk <Arrow /></a></nav></header>
     <section id="home" className="hero section-shell"><div className="grid-lines" aria-hidden="true" /><div className="hero-copy"><p className="eyebrow"><i /> ORA ET LABORA - BERDOA DAN BEKERJA</p><p className="intro">Hi, I'm Theo —</p><h1>Bringing ideas<br /><em>to life.</em></h1><p className="hero-text">I’m a creative developer who enjoys turning complex problems into digital experiences that are simple, useful, and a little more delightful.</p><div className="hero-actions"><a className="button primary" href="#work">Explore selected work <Arrow /></a><a className="text-link" href="#about">Get to know me <span>↓</span></a></div></div><button className={`hero-art profile-card ${photoMode} ${isPhotoSwitching ? 'is-switching' : ''}`} onClick={switchPhotoMode} aria-label="Switch photo appearance">{previousPhotoMode && <img className={`profile-photo previous ${previousPhotoMode}`} src={previousPhotoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="" aria-hidden="true" onError={(event) => { event.currentTarget.src = heroFallback }} />}<div className="photo-ring ring-one" /><div className="photo-ring ring-two" /><img className={`profile-photo current ${photoMode}`} src={photoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="Theo" onAnimationEnd={() => { if (isPhotoSwitching) { setIsPhotoSwitching(false); setPreviousPhotoMode(null) } }} onError={(event) => { event.currentTarget.src = heroFallback }} /><span className="photo-badge">{photoMode === 'color' ? 'COLOR MODE' : 'MONO MODE'}</span><span className="photo-hint">CLICK TO SWITCH ↻</span><div className="spark spark-one">✦</div><div className="spark spark-two">✦</div></button><div className="scroll-tag">SCROLL TO EXPLORE <span>↓</span></div></section>
@@ -212,6 +271,6 @@ function App() {
     <section id="contact" className="contact section-shell"><div className="contact-inner"><p className="section-label">06 / LET’S CONNECT</p><h2>Have something<br />you want to <span>make?</span></h2><p>Whether it’s a small idea, a big project, or simply a story to share — my inbox is always open.</p><button className="mail-link" onClick={copyEmail}>hello@theo.dev <Arrow /></button>{copied && <span className="copy-toast">Email copied!</span>}<div className="socials"><a href="https://github.com" target="_blank" rel="noreferrer">GitHub <Arrow /></a><a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="mailto:hello@theo.dev">Email <Arrow /></a></div></div><div className="contact-orb">✦</div></section>
     <footer><a className="brand" href="#home">THEO<span>./</span></a><p>Designed & built with curiosity. © 2026</p><a href="#home">BACK TO TOP ↑</a></footer>
     <aside className={`theobit-flyer section-${activeSection} hop-${mascotHop % 2} ${isMascotDragging ? 'is-manual-flight' : ''}`} style={mascotPosition ? { left: `${mascotPosition.x}px`, top: `${mascotPosition.y}px`, bottom: 'auto', transform: 'none' } : undefined} aria-label="TheoBit companion"><div className={`theobit-spotify ${musicOpen ? 'is-open' : ''}`} aria-hidden={!musicOpen}><div className="theobit-player-bar"><span className={isPlaying ? 'equalizer active' : 'equalizer'}><i /><i /><i /></span><span>THEOBIT RADIO</span><button className={`mini-play ${isPlaying ? 'is-playing' : ''}`} onClick={togglePlayback} aria-label={isPlaying ? 'Pause music' : 'Play music'} title={isPlaying ? 'Pause music' : 'Play music'}><span aria-hidden="true" /></button></div><div ref={spotifyEmbedRef} className="spotify-embed" /></div><button className={`theobit mood-${mascotStep % 2}`} onClick={handleTheobitClick} onPointerDown={startMascotDrag} onPointerMove={moveMascot} onPointerUp={stopMascotDrag} onPointerCancel={stopMascotDrag} onDoubleClick={() => setMascotPosition(null)} aria-label="Open TheoBit music player, or drag TheoBit to move it" title="Click for music · drag to move · double-click to reset"><span className="mascot-orbit" /><span className="mascot-antenna"><i /></span><span className="mascot-head"><i className="mascot-eye eye-left" /><i className="mascot-eye eye-right" /><b className="mascot-mouth" /></span><span className="mascot-body"><i /><i /><i /></span><span className="mascot-trail" /><span className="mascot-rocket"><i /><i /><i /></span><span className="mascot-spark spark-left">✦</span><span className="mascot-spark spark-right">✦</span></button><p className="mascot-note" role="status">{mascotNotes[mascotStep]} <b>Click for music · drag to move</b></p></aside>
-  </main>
+  </main></>
 }
 export default App
