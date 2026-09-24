@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap');
 
+/* Keep the initial light design stable, even when the device uses dark mode. */
+main.theme-light{color-scheme:light}
+
 /* Compact touch controls and floating companion for small phone screens. */
 @media(max-width:560px){
   .hero-actions{gap:14px}
@@ -25,8 +28,20 @@
 
 /* Keep the selected skill visible while a phone user compares tools. */
 @media(max-width:800px){
-  .toolbox .tool-focus{order:-1;position:sticky;top:82px;z-index:4;align-self:start;padding-bottom:48px;animation:tool-focus-change .42s cubic-bezier(.2,.85,.25,1) both}
-  .toolbox .tool-focus::after{content:'TAP A TOOL BELOW — DETAILS UPDATE HERE';position:absolute;bottom:18px;left:24px;color:#c6c9c1;font:9px 'DM Mono',monospace;letter-spacing:.04em}
+  .toolbox .tool-focus{order:-1;position:sticky;top:82px;z-index:4;align-self:start;padding-bottom:48px;animation:tool-focus-change .42s cubic-bezier(.2,.85,.25,1) both;transition:min-height .4s cubic-bezier(.2,.8,.2,1),padding .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease}
+  .toolbox .tool-focus::after{content:'TAP A TOOL BELOW — DETAILS UPDATE HERE';position:absolute;bottom:18px;left:24px;color:#c6c9c1;font:9px 'DM Mono',monospace;letter-spacing:.04em;transition:opacity .2s ease,transform .3s ease}
+  .toolbox .tool-focus-title,.toolbox .tool-focus-title img,.toolbox .tool-focus-title i,.toolbox .tool-focus h3,.toolbox .tool-focus>strong,.toolbox .tool-focus>strong small{transition:margin .35s cubic-bezier(.2,.8,.2,1),gap .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1),height .35s cubic-bezier(.2,.8,.2,1),font-size .35s cubic-bezier(.2,.8,.2,1)}
+  .toolbox .tool-focus>span{display:block;max-height:34px;overflow:hidden;opacity:1;transform:translateY(0);transition:max-height .3s ease,opacity .2s ease,transform .3s ease}
+  .tool-focus-compact .toolbox .tool-focus{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr auto;min-height:116px;padding:13px 18px}
+  .tool-focus-compact .toolbox .tool-focus>p{grid-column:1/-1;font-size:8px}
+  .tool-focus-compact .toolbox .tool-focus-title{grid-column:1;margin-top:7px;gap:8px}
+  .tool-focus-compact .toolbox .tool-focus-title img,.tool-focus-compact .toolbox .tool-focus-title i{width:25px;height:25px;font-size:13px}
+  .tool-focus-compact .toolbox .tool-focus h3{font-size:21px}
+  .tool-focus-compact .toolbox .tool-focus>strong{grid-column:2;grid-row:2;margin:0;font-size:37px}
+  .tool-focus-compact .toolbox .tool-focus>strong small{font-size:15px}
+  .tool-focus-compact .toolbox .tool-progress{display:block;grid-column:1/-1;grid-row:3;height:5px;margin:8px 0 0}
+  .tool-focus-compact .toolbox .tool-focus>span{max-height:0;opacity:0;transform:translateY(-6px);pointer-events:none}
+  .tool-focus-compact .toolbox .tool-focus::after{opacity:0;transform:translateY(5px);pointer-events:none}
 }
 @keyframes tool-focus-change{from{opacity:.55;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 

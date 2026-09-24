@@ -41,7 +41,7 @@ function App() {
   const [orb, setOrb] = useState({ x: 66, y: 51 })
   const [musicOpen, setMusicOpen] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') !== 'light')
+  const [isDark, setIsDark] = useState(false)
   const [photoMode, setPhotoMode] = useState(() => isDark ? 'mono' : 'color')
   const [previousPhotoMode, setPreviousPhotoMode] = useState(null)
   const [isPhotoSwitching, setIsPhotoSwitching] = useState(false)
@@ -51,6 +51,7 @@ function App() {
   const [mascotPosition, setMascotPosition] = useState(null)
   const [isMascotDragging, setIsMascotDragging] = useState(false)
   const [selectedToolName, setSelectedToolName] = useState('Laravel')
+  const [toolFocusCompact, setToolFocusCompact] = useState(false)
   const spotifyEmbedRef = useRef(null)
   const spotifyControllerRef = useRef(null)
   const mascotDragRef = useRef(null)
@@ -60,7 +61,25 @@ function App() {
   const collectOrb = () => { setScore((value) => value + 1); setOrb({ x: 12 + Math.round(Math.random() * 76), y: 16 + Math.round(Math.random() * 65) }) }
   const copyEmail = async () => { try { await navigator.clipboard.writeText('hello@theo.dev') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
   useEffect(() => { const onKey = (event) => event.key === 'Escape' && setMenuOpen(false); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
-  useEffect(() => { localStorage.setItem('theme', isDark ? 'dark' : 'light') }, [isDark])
+  useEffect(() => {
+    const updateToolFocusSize = () => {
+      const toolbox = document.getElementById('tools')
+      const focusPanel = document.querySelector('.tool-focus')
+      if (!toolbox || !focusPanel || window.innerWidth > 800) return setToolFocusCompact(false)
+      const toolboxBounds = toolbox.getBoundingClientRect()
+      const panelBounds = focusPanel.getBoundingClientRect()
+      const shouldCompact = toolboxBounds.top < 0 && toolboxBounds.bottom > 180 && panelBounds.top <= 84
+      setToolFocusCompact((compact) => compact === shouldCompact ? compact : shouldCompact)
+    }
+
+    updateToolFocusSize()
+    window.addEventListener('scroll', updateToolFocusSize, { passive: true })
+    window.addEventListener('resize', updateToolFocusSize)
+    return () => {
+      window.removeEventListener('scroll', updateToolFocusSize)
+      window.removeEventListener('resize', updateToolFocusSize)
+    }
+  }, [])
   useEffect(() => {
     const sections = document.querySelectorAll('main > section:not(.hero)')
     if (!('IntersectionObserver' in window)) {
@@ -181,7 +200,7 @@ function App() {
     setIsMascotDragging(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
-  return <main className={isDark ? 'theme-dark' : 'theme-light'}>
+  return <main className={`${isDark ? 'theme-dark' : 'theme-light'} ${toolFocusCompact ? 'tool-focus-compact' : ''}`}>
     <div className="ambient-background" aria-hidden="true"><span className="ambient-grid" /><span className="ambient-orb orb-violet" /><span className="ambient-orb orb-lime" /><span className="ambient-ring" /></div>
     <header className={`nav-wrap ${activeSection === 3 || activeSection === 6 ? 'on-dark-surface' : ''}`}><a className="brand" href="#home" aria-label="Go to homepage">THEO<span>./</span></a><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation">{menuOpen ? '×' : '☰'}</button><nav className={menuOpen ? 'nav open' : 'nav'}><a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#tools" onClick={() => setMenuOpen(false)}>Toolbox</a><a href="#work" onClick={() => setMenuOpen(false)}>Work</a><a href="#credentials" onClick={() => setMenuOpen(false)}>Credentials</a><a href="#play" onClick={() => setMenuOpen(false)}>Playground</a><button className="theme-toggle" onClick={() => setAppearance(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>{isDark ? '☀ LIGHT' : '☾ DARK'}</button><a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Let’s talk <Arrow /></a></nav></header>
     <section id="home" className="hero section-shell"><div className="grid-lines" aria-hidden="true" /><div className="hero-copy"><p className="eyebrow"><i /> ORA ET LABORA - BERDOA DAN BEKERJA</p><p className="intro">Hi, I'm Theo —</p><h1>Bringing ideas<br /><em>to life.</em></h1><p className="hero-text">I’m a creative developer who enjoys turning complex problems into digital experiences that are simple, useful, and a little more delightful.</p><div className="hero-actions"><a className="button primary" href="#work">Explore selected work <Arrow /></a><a className="text-link" href="#about">Get to know me <span>↓</span></a></div></div><button className={`hero-art profile-card ${photoMode} ${isPhotoSwitching ? 'is-switching' : ''}`} onClick={switchPhotoMode} aria-label="Switch photo appearance">{previousPhotoMode && <img className={`profile-photo previous ${previousPhotoMode}`} src={previousPhotoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="" aria-hidden="true" onError={(event) => { event.currentTarget.src = heroFallback }} />}<div className="photo-ring ring-one" /><div className="photo-ring ring-two" /><img className={`profile-photo current ${photoMode}`} src={photoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="Theo" onAnimationEnd={() => { if (isPhotoSwitching) { setIsPhotoSwitching(false); setPreviousPhotoMode(null) } }} onError={(event) => { event.currentTarget.src = heroFallback }} /><span className="photo-badge">{photoMode === 'color' ? 'COLOR MODE' : 'MONO MODE'}</span><span className="photo-hint">CLICK TO SWITCH ↻</span><div className="spark spark-one">✦</div><div className="spark spark-two">✦</div></button><div className="scroll-tag">SCROLL TO EXPLORE <span>↓</span></div></section>
