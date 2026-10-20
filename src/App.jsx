@@ -3,9 +3,12 @@ import heroFallback from './assets/hero.png'
 import './App.css'
 
 const projects = [
-  { type: 'WEB EXPERIENCE', title: 'Nusantara Travel', description: 'A destination discovery platform that turns holiday plans into memorable journeys.', tags: ['React', 'Tailwind', 'Vercel'], accent: 'violet', live: '#', code: '#' },
-  { type: 'PRODUCTIVITY', title: 'Focusboard', description: 'A minimal workspace for organizing tasks, building habits, and completing what matters.', tags: ['Next.js', 'Firebase', 'UI/UX'], accent: 'green', live: '#', code: '#' },
-  { type: 'EXPERIMENT', title: 'Weatherwise', description: 'A weather dashboard that suggests activities based on the conditions around you.', tags: ['API', 'JavaScript', 'CSS'], accent: 'orange', live: '#', code: '#' },
+  { type: 'WEB EXPERIENCE', title: 'Nusantara Travel', description: 'A destination planner that turns holiday ideas into thoughtful routes and memorable journeys.', tags: ['React', 'Tailwind', 'Vercel'], accent: 'violet', mark: '✦', live: '#', code: '#' },
+  { type: 'PRODUCTIVITY', title: 'Focusboard', description: 'A quiet workspace for organizing tasks, building habits, and finishing what matters.', tags: ['Next.js', 'Firebase', 'UI/UX'], accent: 'lime', mark: '✓', live: '#', code: '#' },
+  { type: 'EXPERIMENT', title: 'Weatherwise', description: 'A weather dashboard that suggests a better plan for the conditions around you.', tags: ['API', 'JavaScript', 'CSS'], accent: 'orange', mark: '☼', live: '#', code: '#' },
+  { type: 'FINANCE TOOL', title: 'Kantongku', description: 'A friendly personal finance companion for seeing where every rupiah goes.', tags: ['Laravel', 'MySQL', 'Chart.js'], accent: 'blue', mark: 'Rp', live: '#', code: '#' },
+  { type: 'CAMPUS PLATFORM', title: 'KelasKita', description: 'A collaborative learning space that keeps courses, notes, and deadlines in one place.', tags: ['React', 'Node.js', 'MongoDB'], accent: 'pink', mark: '↗', live: '#', code: '#' },
+  { type: 'MOBILE APP', title: 'RuangRapi', description: 'A simple home-organizing app for turning everyday routines into lighter moments.', tags: ['Flutter', 'Dart', 'Firebase'], accent: 'sky', mark: '⌂', live: '#', code: '#' },
 ]
 
 const toolGroups = [
@@ -19,54 +22,79 @@ const toolGroups = [
     { name: 'Laravel', icon: 'laravel/FF2D20', level: 84 }, { name: 'PHP', icon: 'php/A78BFA', level: 81 }, { name: 'Node.js', icon: 'nodedotjs/7CC327', level: 70 }, { name: 'REST API', symbol: '</>', level: 78 },
   ] },
   { number: '04', title: 'Database', description: 'Structured data that keeps an application dependable.', tools: [
-    { name: 'MySQL', icon: 'mysql/61DAFB', level: 76 }, { name: 'Data Modeling', symbol: '▦', level: 72 },
+    { name: 'MySQL', icon: 'mysql/61DAFB', level: 76 },
   ] },
-]
-
-const allTools = toolGroups.flatMap((group) => group.tools)
-
-const mascotNotes = [
-  'Hey, I’m TheoBit — Theo’s curious sidekick.',
-  'Sketch it. Build it. Refine it.',
-  'Small details make digital experiences feel right.',
-  'Let’s turn the next idea into something useful.',
+  { number: '05', title: 'Mobile Development', description: 'Cross-platform mobile apps built for everyday use.', tools: [
+    { name: 'Flutter', icon: 'flutter/02569B', level: 76 }, { name: 'Dart', icon: 'dart/0175C2', level: 74 },
+  ] },
 ]
 
 function Arrow() { return <span className="arrow" aria-hidden="true">↗</span> }
 
+const projectSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+function ProjectPage({ project, isDark, onBack }) {
+  const [activeDetail, setActiveDetail] = useState(0)
+  const photos = [
+    { src: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=1100&q=85', alt: 'Interface concept on a laptop' },
+    { src: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1100&q=85', alt: 'Code workspace' },
+    { src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1100&q=85', alt: 'Product development screen' },
+    { src: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1100&q=85', alt: 'Website on a desktop display' },
+  ]
+  return <main className={`project-page-shell ${isDark ? 'theme-dark' : 'theme-light'}`}><header className="project-page-nav"><a className="brand" href="#home">THEO<span>./</span></a><button className="work-back" onClick={onBack}>← Back to selected work</button></header><section className="work project-page-work is-visible"><div className="section-heading"><div><p className="section-label">SELECTED WORK / CASE STUDY</p><h2>{project.title}<br /><span>Project detail.</span></h2></div><p className="project-page-type">{project.type}</p></div><div className="project-detail"><div className="detail-deck photo-deck">{photos.map((photo, index) => { const position = (index - activeDetail + photos.length) % photos.length; return <article key={photo.src} className={`detail-card photo-card detail-pos-${position}`} onClick={() => setActiveDetail(index)}><img src={photo.src} alt={photo.alt} /></article> })}</div><div className="work-deck-footer"><div className="deck-pagination">{photos.map((photo, index) => <button key={photo.src} className={index === activeDetail ? 'active' : ''} onClick={() => setActiveDetail(index)} aria-label={`Show photo ${index + 1}`} aria-current={index === activeDetail} />)}</div><div className="deck-controls"><button onClick={() => setActiveDetail((activeDetail - 1 + photos.length) % photos.length)} aria-label="Previous photo">←</button><button onClick={() => setActiveDetail((activeDetail + 1) % photos.length)} aria-label="Next photo">→</button></div></div></div><div className="project-narrative"><p className="section-label">ABOUT THE PROJECT</p><h3>{project.title} is made to feel clear from the first click.</h3><p>{project.description}</p><p>The direction is deliberately simple: a focused visual system, an intuitive flow, and details that help people complete their task with less friction.</p><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></section></main>
+}
+
+function WorkShowcase({ onOpenProject }) {
+  const [view, setView] = useState('gallery')
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [activeDetail, setActiveDetail] = useState(0)
+  const project = selectedProject === null ? null : (projects[selectedProject] ?? projects[0])
+  const detailCards = project ? [
+    { label: '01 / OVERVIEW', title: project.title, text: project.description, mark: project.mark },
+    { label: '02 / THE IDEA', title: 'Clear, useful flow.', text: `A focused experience shaped around the people who use ${project.title} every day.`, mark: '✦' },
+    { label: '03 / TOOLKIT', title: project.tags.join(' · '), text: 'A lightweight stack chosen to keep the product quick, approachable, and easy to evolve.', mark: '↗' },
+    { label: '04 / OUTCOME', title: 'Built with care.', text: 'A concept that turns a real need into a calmer, more delightful digital moment.', mark: '✓' },
+  ] : []
+  const openPreview = (index) => onOpenProject(projectSlug(projects[index].title))
+  const backToGallery = () => { setView('gallery'); setSelectedProject(null) }
+
+  return <section id="work" className={`work section-shell work-${view}`}><div className="section-heading"><div><p className="section-label">03 / SELECTED WORK</p><h2>Projects I’m <span>proud of.</span></h2></div><a className="text-link desktop-link" href="https://github.com" target="_blank" rel="noreferrer">View all on GitHub <Arrow /></a></div>
+    {view === 'gallery' && <div className="project-dome brick-gallery" aria-label="Project gallery"><div className="dome-sphere">{Array.from({ length: 3 }, (_, rowIndex) => <div className={`brick-row row-${rowIndex}`} key={rowIndex}>{Array.from({ length: 2 }, (_, setIndex) => <div className="brick-set" key={setIndex}>{projects.map((item, itemIndex) => <button type="button" className={`dome-project ${item.accent}`} onClick={(event) => { event.stopPropagation(); openPreview(itemIndex) }} key={`${item.title}-${setIndex}`} aria-label={`Open ${item.title} project details`}><span className="dome-screen"><i>{item.mark}</i><small>{item.title}</small></span></button>)}</div>)}</div>)}</div></div>}
+    {view === 'preview' && project && <div className="project-preview"><button className="work-back" onClick={backToGallery}>← All projects</button><div className={`preview-art ${project.accent}`}><span>{project.mark}</span><small>{project.type}</small></div><div className="preview-copy"><p className="project-type">SELECTED PROJECT / 0{selectedProject + 1}</p><h3>{project.title}</h3><p>{project.description}</p><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button className="button preview-open" onClick={() => setView('detail')}>Open project detail <Arrow /></button></div></div>}
+    {view === 'detail' && project && <div className="project-detail"><button className="work-back" onClick={() => setView('preview')}>← Back to overview</button><div className="detail-deck">{detailCards.map((card, index) => { const position = (index - activeDetail + detailCards.length) % detailCards.length; return <article key={card.label} className={`detail-card ${project.accent} detail-pos-${position}`} onClick={() => setActiveDetail(index)}><p>{card.label}</p><div className="detail-mark">{card.mark}</div><h3>{card.title}</h3><span>{card.text}</span></article> })}</div><div className="work-deck-footer"><div className="deck-pagination">{detailCards.map((card, index) => <button key={card.label} className={index === activeDetail ? 'active' : ''} onClick={() => setActiveDetail(index)} aria-label={`Show ${card.label}`} aria-current={index === activeDetail} />)}</div><div className="deck-controls"><button onClick={() => setActiveDetail((activeDetail - 1 + detailCards.length) % detailCards.length)} aria-label="Previous detail">←</button><button onClick={() => setActiveDetail((activeDetail + 1) % detailCards.length)} aria-label="Next detail">→</button></div></div></div>}
+  </section>
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [score, setScore] = useState(0)
-  const [orb, setOrb] = useState({ x: 66, y: 51 })
-  const [musicOpen, setMusicOpen] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [photoMode, setPhotoMode] = useState(() => isDark ? 'mono' : 'color')
   const [previousPhotoMode, setPreviousPhotoMode] = useState(null)
   const [isPhotoSwitching, setIsPhotoSwitching] = useState(false)
-  const [mascotStep, setMascotStep] = useState(0)
-  const [activeSection, setActiveSection] = useState(0)
-  const [mascotHop, setMascotHop] = useState(0)
-  const [mascotPosition, setMascotPosition] = useState(null)
-  const [isMascotDragging, setIsMascotDragging] = useState(false)
   const [selectedToolName, setSelectedToolName] = useState('Laravel')
-  const [toolFocusCompact, setToolFocusCompact] = useState(false)
   const [introProgress, setIntroProgress] = useState(0)
   const [introReady, setIntroReady] = useState(false)
-  const [introDismissed, setIntroDismissed] = useState(false)
+  const [introDismissed, setIntroDismissed] = useState(true)
   const [introPull, setIntroPull] = useState(0)
-  const spotifyEmbedRef = useRef(null)
-  const spotifyControllerRef = useRef(null)
-  const mascotDragRef = useRef(null)
-  const ignoreMascotClickRef = useRef(false)
+  const [openedProjectSlug, setOpenedProjectSlug] = useState(() => window.location.hash.replace('#project/', ''))
   const introDragRef = useRef(null)
   const introPullRef = useRef(0)
-  const selectedTool = allTools.find((tool) => tool.name === selectedToolName) ?? allTools[0]
-  const selectedToolGroup = toolGroups.find((group) => group.tools.some((tool) => tool.name === selectedTool.name)) ?? toolGroups[0]
-  const collectOrb = () => { setScore((value) => value + 1); setOrb({ x: 12 + Math.round(Math.random() * 76), y: 16 + Math.round(Math.random() * 65) }) }
-  const copyEmail = async () => { try { await navigator.clipboard.writeText('hello@theo.dev') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
+  const copyEmail = async () => { try { await navigator.clipboard.writeText('theochrisxto@gmail.com') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
   useEffect(() => { const onKey = (event) => event.key === 'Escape' && setMenuOpen(false); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
+  useEffect(() => {
+    const syncProjectRoute = () => setOpenedProjectSlug(window.location.hash.replace('#project/', ''))
+    window.addEventListener('hashchange', syncProjectRoute)
+    return () => window.removeEventListener('hashchange', syncProjectRoute)
+  }, [])
+  useEffect(() => {
+    const isProjectRoute = window.location.hash.startsWith('#project/')
+    if (openedProjectSlug && window.location.hash !== `#project/${openedProjectSlug}`) {
+      window.history.pushState(null, '', `#project/${openedProjectSlug}`)
+    } else if (!openedProjectSlug && isProjectRoute) {
+      window.history.pushState(null, '', '#work')
+    }
+  }, [openedProjectSlug])
   useEffect(() => {
     const loadingStartedAt = performance.now()
     let windowLoaded = document.readyState === 'complete'
@@ -104,25 +132,6 @@ function App() {
     return () => { document.body.style.overflow = previousOverflow }
   }, [introDismissed])
   useEffect(() => {
-    const updateToolFocusSize = () => {
-      const toolbox = document.getElementById('tools')
-      const focusPanel = document.querySelector('.tool-focus')
-      if (!toolbox || !focusPanel || window.innerWidth > 800) return setToolFocusCompact(false)
-      const toolboxBounds = toolbox.getBoundingClientRect()
-      const panelBounds = focusPanel.getBoundingClientRect()
-      const shouldCompact = toolboxBounds.top < 0 && toolboxBounds.bottom > 180 && panelBounds.top <= 84
-      setToolFocusCompact((compact) => compact === shouldCompact ? compact : shouldCompact)
-    }
-
-    updateToolFocusSize()
-    window.addEventListener('scroll', updateToolFocusSize, { passive: true })
-    window.addEventListener('resize', updateToolFocusSize)
-    return () => {
-      window.removeEventListener('scroll', updateToolFocusSize)
-      window.removeEventListener('resize', updateToolFocusSize)
-    }
-  }, [])
-  useEffect(() => {
     const sections = document.querySelectorAll('main > section:not(.hero)')
     if (!('IntersectionObserver' in window)) {
       sections.forEach((section) => section.classList.add('is-visible'))
@@ -139,64 +148,7 @@ function App() {
 
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
-  }, [])
-  useEffect(() => {
-    const sections = [...document.querySelectorAll('main > section')]
-    let currentSection = -1
-    let frameId = null
-    const updateMascotPosition = () => {
-      frameId = null
-      const viewportCenter = window.innerHeight * 0.48
-      const nextSection = sections.reduce((closest, section, index) => {
-        const bounds = section.getBoundingClientRect()
-        const distance = Math.abs((bounds.top + bounds.bottom) / 2 - viewportCenter)
-        return distance < closest.distance ? { index, distance } : closest
-      }, { index: 0, distance: Number.POSITIVE_INFINITY }).index
-
-      if (nextSection === currentSection) return
-      currentSection = nextSection
-      setActiveSection(nextSection)
-      setMascotHop((hop) => hop + 1)
-    }
-    const onScroll = () => {
-      if (frameId === null) frameId = window.requestAnimationFrame(updateMascotPosition)
-    }
-
-    updateMascotPosition()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (frameId !== null) window.cancelAnimationFrame(frameId)
-    }
-  }, [])
-  useEffect(() => {
-    const createSpotifyPlayer = (IFrameAPI) => {
-      if (!spotifyEmbedRef.current || spotifyControllerRef.current) return
-      IFrameAPI.createController(spotifyEmbedRef.current, {
-        uri: 'spotify:playlist:6vyohbE3i0ZqjS9bpz3L3T',
-        width: '100%',
-        height: window.innerWidth <= 560 ? 118 : 152,
-        theme: '0',
-      }, (controller) => {
-        spotifyControllerRef.current = controller
-        controller.addListener('playback_update', (event) => setIsPlaying(!event.data.isPaused))
-      })
-    }
-
-    if (window.SpotifyIframeApi) createSpotifyPlayer(window.SpotifyIframeApi)
-    else {
-      const script = document.createElement('script')
-      script.src = 'https://open.spotify.com/embed/iframe-api/v1'
-      script.async = true
-      window.onSpotifyIframeApiReady = createSpotifyPlayer
-      document.body.appendChild(script)
-    }
-
-    return () => { window.onSpotifyIframeApiReady = null }
-  }, [])
-  const togglePlayback = () => spotifyControllerRef.current?.togglePlay()
+  }, [openedProjectSlug])
   const setAppearance = (darkMode) => {
     const nextPhotoMode = darkMode ? 'mono' : 'color'
     if (isPhotoSwitching || (isDark === darkMode && photoMode === nextPhotoMode)) return
@@ -234,52 +186,18 @@ function App() {
     introDragRef.current = null
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
-  const interactWithMascot = () => setMascotStep((step) => (step + 1) % mascotNotes.length)
-  const handleTheobitClick = () => {
-    if (ignoreMascotClickRef.current) {
-      ignoreMascotClickRef.current = false
-      return
-    }
-    interactWithMascot()
-    setMascotHop((hop) => hop + 1)
-    setMusicOpen((open) => !open)
-  }
-  const startMascotDrag = (event) => {
-    mascotDragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false }
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-  const moveMascot = (event) => {
-    const drag = mascotDragRef.current
-    if (!drag || drag.pointerId !== event.pointerId) return
-    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return
-    drag.moved = true
-    setIsMascotDragging(true)
-    const x = Math.min(window.innerWidth - 165, Math.max(8, event.clientX - 70))
-    const y = Math.min(window.innerHeight - 130, Math.max(55, event.clientY - 65))
-    setMascotPosition({ x, y })
-  }
-  const stopMascotDrag = (event) => {
-    const drag = mascotDragRef.current
-    if (drag?.pointerId === event.pointerId && drag.moved) {
-      ignoreMascotClickRef.current = true
-      window.requestAnimationFrame(() => { ignoreMascotClickRef.current = false })
-    }
-    mascotDragRef.current = null
-    setIsMascotDragging(false)
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
-  }
-  return <>{!introDismissed && <section className={`intro-loader ${introReady ? 'is-ready' : ''}`} aria-label={introReady ? 'Portfolio is ready. Drag to enter.' : `Loading portfolio: ${introProgress}%`}><div className="intro-loader-content"><p className="intro-brand">THEO<span>./</span></p><p className="intro-kicker">ORA ET LABORA</p><h1>{introReady ? <>Ready to <em>explore?</em></> : <>Building a little <em>magic.</em></>}</h1><p className="intro-copy">Waiting for the portfolio to be ready.</p><div className="intro-progress" aria-hidden="true"><i style={{ '--intro-progress': `${introProgress}%` }} /></div><div className="intro-progress-meta"><span>{introReady ? 'SYSTEM READY' : 'PREPARING PORTFOLIO'}</span><b>{introProgress}%</b></div>{introReady && <button className="intro-pull" style={{ '--intro-pull': `${introPull}%` }} onPointerDown={startIntroPull} onPointerMove={moveIntroPull} onPointerUp={stopIntroPull} onPointerCancel={stopIntroPull} aria-label="Drag right to enter portfolio"><span>DRAG TO ENTER</span><i aria-hidden="true">→</i></button>}</div></section>}<main className={`${isDark ? 'theme-dark' : 'theme-light'} ${toolFocusCompact ? 'tool-focus-compact' : ''}`}>
+  const openedProject = projects.find((project) => projectSlug(project.title) === openedProjectSlug)
+  if (openedProject) return <ProjectPage project={openedProject} isDark={isDark} onBack={() => setOpenedProjectSlug('')} />
+  return <>{!introDismissed && <section className={`intro-loader ${introReady ? 'is-ready' : ''}`} aria-label={introReady ? 'Portfolio is ready. Drag to enter.' : `Loading portfolio: ${introProgress}%`}><div className="intro-loader-content"><p className="intro-brand">THEO<span>./</span></p><p className="intro-kicker">ORA ET LABORA</p><h1>{introReady ? <>Ready to <em>explore?</em></> : <>Building a little <em>magic.</em></>}</h1><p className="intro-copy">Waiting for the portfolio to be ready.</p><div className="intro-progress" aria-hidden="true"><i style={{ '--intro-progress': `${introProgress}%` }} /></div><div className="intro-progress-meta"><span>{introReady ? 'SYSTEM READY' : 'PREPARING PORTFOLIO'}</span><b>{introProgress}%</b></div>{introReady && <button className="intro-pull" style={{ '--intro-pull': `${introPull}%` }} onPointerDown={startIntroPull} onPointerMove={moveIntroPull} onPointerUp={stopIntroPull} onPointerCancel={stopIntroPull} aria-label="Drag right to enter portfolio"><span>DRAG TO ENTER</span><i aria-hidden="true">→</i></button>}</div></section>}<main className={isDark ? 'theme-dark' : 'theme-light'}>
     <div className="ambient-background" aria-hidden="true"><span className="ambient-grid" /><span className="ambient-orb orb-violet" /><span className="ambient-orb orb-lime" /><span className="ambient-ring" /></div>
-    <header className={`nav-wrap ${activeSection === 3 || activeSection === 6 ? 'on-dark-surface' : ''}`}><a className="brand" href="#home" aria-label="Go to homepage">THEO<span>./</span></a><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation">{menuOpen ? '×' : '☰'}</button><nav className={menuOpen ? 'nav open' : 'nav'}><a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#tools" onClick={() => setMenuOpen(false)}>Toolbox</a><a href="#work" onClick={() => setMenuOpen(false)}>Work</a><a href="#credentials" onClick={() => setMenuOpen(false)}>Credentials</a><a href="#play" onClick={() => setMenuOpen(false)}>Playground</a><button className="theme-toggle" onClick={() => setAppearance(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>{isDark ? '☀ LIGHT' : '☾ DARK'}</button><a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Let’s talk <Arrow /></a></nav></header>
+    <header className="nav-wrap"><a className="brand" href="#home" aria-label="Go to homepage">THEO<span>./</span></a><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation">{menuOpen ? '×' : '☰'}</button><nav className={menuOpen ? 'nav open' : 'nav'}><a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#tools" onClick={() => setMenuOpen(false)}>Toolbox</a><a href="#work" onClick={() => setMenuOpen(false)}>Work</a><a href="#credentials" onClick={() => setMenuOpen(false)}>Experience</a><button className="theme-toggle" onClick={() => setAppearance(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>{isDark ? '☀ LIGHT' : '☾ DARK'}</button><a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Let’s talk <Arrow /></a></nav></header>
     <section id="home" className="hero section-shell"><div className="grid-lines" aria-hidden="true" /><div className="hero-copy"><p className="eyebrow"><i /> ORA ET LABORA - BERDOA DAN BEKERJA</p><p className="intro">Hi, I'm Theo —</p><h1>Bringing ideas<br /><em>to life.</em></h1><p className="hero-text">I’m a creative developer who enjoys turning complex problems into digital experiences that are simple, useful, and a little more delightful.</p><div className="hero-actions"><a className="button primary" href="#work">Explore selected work <Arrow /></a><a className="text-link" href="#about">Get to know me <span>↓</span></a></div></div><button className={`hero-art profile-card ${photoMode} ${isPhotoSwitching ? 'is-switching' : ''}`} onClick={switchPhotoMode} aria-label="Switch photo appearance">{previousPhotoMode && <img className={`profile-photo previous ${previousPhotoMode}`} src={previousPhotoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="" aria-hidden="true" onError={(event) => { event.currentTarget.src = heroFallback }} />}<div className="photo-ring ring-one" /><div className="photo-ring ring-two" /><img className={`profile-photo current ${photoMode}`} src={photoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="Theo" onAnimationEnd={() => { if (isPhotoSwitching) { setIsPhotoSwitching(false); setPreviousPhotoMode(null) } }} onError={(event) => { event.currentTarget.src = heroFallback }} /><span className="photo-badge">{photoMode === 'color' ? 'COLOR MODE' : 'MONO MODE'}</span><span className="photo-hint">CLICK TO SWITCH ↻</span><div className="spark spark-one">✦</div><div className="spark spark-two">✦</div></button><div className="scroll-tag">SCROLL TO EXPLORE <span>↓</span></div></section>
-    <section id="about" className="about section-shell"><p className="section-label">01 / ABOUT ME</p><div className="about-grid"><div className="about-intro"><h2>I turn curious questions into <span>useful digital experiences.</span></h2></div><div className="about-copy"><p>I’m Jawara Theo Christo — a software developer, UI/UX designer, and full-stack builder based in Yogyakarta, ready to collaborate from anywhere. I learn by building, turning real-world problems into digital experiences that feel simple, useful, and intuitive.</p><p>I’m naturally curious: always experimenting, learning, and refining. I enjoy creating web applications, UI/UX-focused products, internal business systems, and platforms that make a real workflow clearer and more efficient.</p><a className="button outline" href="#contact">Let’s build something useful <Arrow /></a></div></div></section>
-    <section id="tools" className="toolbox section-shell"><div className="toolbox-heading"><p className="section-label">02 / TOOLBOX</p><h2>Tools behind the <span>things I build.</span></h2><p>Choose a tool to see my current confidence level. These are living skills — always being sharpened through real projects.</p></div><div className="toolbox-content"><div className="tool-groups">{toolGroups.map((group) => <article className="tool-group" key={group.title}><div className="tool-group-copy"><span>{group.number}</span><h3>{group.title}</h3><p>{group.description}</p></div><div className="tool-buttons">{group.tools.map((tool) => <button className={selectedTool.name === tool.name ? 'tool-button selected' : 'tool-button'} onClick={() => setSelectedToolName(tool.name)} aria-pressed={selectedTool.name === tool.name} key={tool.name}>{tool.icon ? <img src={`https://cdn.simpleicons.org/${tool.icon}`} alt="" /> : <i aria-hidden="true">{tool.symbol}</i>}<span>{tool.name}</span></button>)}</div></article>)}</div><aside className="tool-focus" key={selectedTool.name}><p>{selectedToolGroup.title} / CURRENT CONFIDENCE</p><div className="tool-focus-title">{selectedTool.icon ? <img src={`https://cdn.simpleicons.org/${selectedTool.icon}`} alt="" /> : <i aria-hidden="true">{selectedTool.symbol}</i>}<h3>{selectedTool.name}</h3></div><strong>{selectedTool.level}<small>%</small></strong><div className="tool-progress" aria-label={`${selectedTool.name} skill level: ${selectedTool.level}%`}><i style={{ '--skill-level': `${selectedTool.level}%` }} /></div><span>Built and refined through hands-on projects.</span></aside></div></section>
-    <section id="work" className="work section-shell"><div className="section-heading"><div><p className="section-label">03 / SELECTED WORK</p><h2>Projects I’m <span>proud of.</span></h2></div><a className="text-link desktop-link" href="https://github.com" target="_blank" rel="noreferrer">View all on GitHub <Arrow /></a></div><div className="project-list">{projects.map((project, index) => <article className={`project-card ${project.accent}`} key={project.title}><div className="project-number">0{index + 1}</div><div className="project-visual"><div className="screen"><span>{project.type}</span><b>{index === 0 ? '✦' : index === 1 ? '✓' : '☼'}</b><div className="screen-lines" /></div></div><div className="project-content"><p className="project-type">{project.type}</p><h3>{project.title}</h3><p>{project.description}</p><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><div className="project-links"><a href={project.live}>Live preview <Arrow /></a><a href={project.code}>Source code <Arrow /></a></div></div></article>)}</div></section>
-    <section id="credentials" className="credentials section-shell"><p className="section-label">04 / LEARNING JOURNEY</p><h2>Stay curious.<br /><span>Keep growing.</span></h2><div className="credential-grid"><article><span className="credential-icon">⌘</span><p>FREECODECAMP</p><h3>Responsive Web Design</h3><small>2025 · 300+ learning hours</small></article><article><span className="credential-icon">◆</span><p>DICODING INDONESIA</p><h3>Web Programming Fundamentals</h3><small>2025 · IDCamp Scholarship</small></article><article className="credential-more"><span>+</span><h3>The next certificate is in progress.</h3><p>There is always room to learn something new.</p></article></div></section>
-    <section id="play" className="play section-shell"><div className="play-copy"><p className="section-label">05 / BEYOND CODE</p><h2>A little space to <span>play.</span></h2><p>When I’m away from the editor, I’m usually exploring visuals, listening to new music, or finding ideas through games.</p><div className="hobby-pills"><span>🎮 Gaming</span><span>🎧 Music</span><span>📷 Visuals</span><span>☕ Coffee</span></div></div><div className="game-card"><div className="game-top"><span>ORBIT COLLECTOR</span><b>SCORE: {String(score).padStart(2, '0')}</b></div><div className="game-field"><div className="game-planet">●</div><button onClick={collectOrb} className="orb-button" style={{ left: `${orb.x}%`, top: `${orb.y}%` }} aria-label="Collect orb">✦</button><p>click the star to collect energy</p></div><div className="game-bottom"><span>◉ ONLINE</span><button onClick={() => { setScore(0); setOrb({ x: 66, y: 51 }) }}>RESET GAME ↻</button></div></div></section>
-    <section id="contact" className="contact section-shell"><div className="contact-inner"><p className="section-label">06 / LET’S CONNECT</p><h2>Have something<br />you want to <span>make?</span></h2><p>Whether it’s a small idea, a big project, or simply a story to share — my inbox is always open.</p><button className="mail-link" onClick={copyEmail}>hello@theo.dev <Arrow /></button>{copied && <span className="copy-toast">Email copied!</span>}<div className="socials"><a href="https://github.com" target="_blank" rel="noreferrer">GitHub <Arrow /></a><a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="mailto:hello@theo.dev">Email <Arrow /></a></div></div><div className="contact-orb">✦</div></section>
+    <section id="about" className="about section-shell"><p className="section-label">01 / ABOUT ME</p><div className="about-grid"><div className="about-intro"><h2>I turn curious questions into <span>useful digital experiences.</span></h2></div><div className="about-copy"><p>I’m Jawara Theo Christo — an Informatics graduate (S.Kom.) from Universitas Atma Jaya Yogyakarta, software developer, UI/UX designer, and full-stack builder based in Yogyakarta, ready to collaborate from anywhere. I learn by building, turning real-world problems into digital experiences that feel simple, useful, and intuitive.</p><p>I’m naturally curious: always experimenting, learning, and refining. I enjoy creating web applications, UI/UX-focused products, internal business systems, and mobile applications with Flutter and Dart that make real workflows clearer and more efficient.</p><a className="button outline" href="#contact">Let’s build something useful <Arrow /></a></div></div></section>
+    <section id="tools" className="toolbox section-shell"><div className="toolbox-heading"><p className="section-label">02 / TOOLBOX</p><h2>Tools behind the <span>things I build.</span></h2><p>Choose a tool to highlight it. These are living skills — always being sharpened through real projects.</p></div><div className="toolbox-content"><div className="tool-groups">{toolGroups.map((group) => <article className="tool-group" key={group.title}><div className="tool-group-copy"><span>{group.number}</span><h3>{group.title}</h3><p>{group.description}</p></div><div className="tool-buttons">{group.tools.map((tool) => <button className={selectedToolName === tool.name ? 'tool-button selected' : 'tool-button'} onClick={() => setSelectedToolName(tool.name)} aria-pressed={selectedToolName === tool.name} key={tool.name}>{tool.icon ? <img src={`https://cdn.simpleicons.org/${tool.icon}`} alt="" /> : <i aria-hidden="true">{tool.symbol}</i>}<span>{tool.name}</span></button>)}</div></article>)}</div></div></section>
+    <WorkShowcase onOpenProject={setOpenedProjectSlug} />
+    <section id="credentials" className="credentials experience section-shell"><p className="section-label">04 / EXPERIENCE</p><h2>Learning by <span>building.</span></h2><div className="experience-list"><article className="experience-card"><div className="experience-meta"><span>01</span><p>JAN 2026 — APR 2026</p></div><div className="experience-main"><div className="experience-photos"><img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80" alt="Office workspace placeholder" /></div><p className="experience-company">DINAS KOMUNIKASI DAN INFORMATIKA KAB. KULON PROGO</p><h3>Internship — IT &amp; System Governance</h3><small>Yogyakarta, Indonesia</small><p className="experience-intro">A government agency responsible for information technology, communication, digital services, and public information management in Kulon Progo.</p><ul><li>Developed and enhanced the AnjabPRO web application with Laravel, PHP, MySQL, and Tailwind CSS.</li><li>Implemented modules for job analysis, workload analysis, job requirements, hierarchy, and organizational data.</li><li>Built JWT APIs, Google reCAPTCHA V3, PDF export, XLSX import/export, dashboards, and workflow validation.</li><li>Tested, debugged, refined UI flows, and collaborated through GitHub branches and pull requests.</li></ul><div className="tags"><span>Laravel</span><span>PHP</span><span>MySQL</span><span>Tailwind CSS</span></div></div></article><article className="experience-card"><div className="experience-meta"><span>02</span><p>JUN 2026 — OCT 2026</p></div><div className="experience-main"><div className="experience-photos"><img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80" alt="Retail workspace placeholder" /></div><p className="experience-company">EAGLE JEANS CORPORATION</p><h3>Freelance — Software Developer</h3><small>Yogyakarta, Indonesia</small><p className="experience-intro">A fashion and apparel business specializing in denim products, supported by a digital system for daily operations, transactions, and customer-related processes.</p><ul><li>Developed and maintained a production Laravel application supporting real business activities.</li><li>Implemented business features, CRUD modules, transaction workflows, and database operations.</li><li>Customized features, resolved bugs, and improved data management and usability based on client needs.</li><li>Handled deployment and production maintenance to keep the application reliable for ongoing operations.</li></ul><div className="tags"><span>Laravel</span><span>CRUD</span><span>MySQL</span><span>Deployment</span></div></div></article></div></section>
+    <section id="contact" className="contact section-shell"><div className="contact-inner"><p className="section-label">05 / LET’S CONNECT</p><h2>Have something<br />you want to <span>make?</span></h2><p>Whether it’s a production system, a mobile app, or something in between — let’s talk about what you need.</p><button className="mail-link" onClick={copyEmail}>theochrisxto@gmail.com <Arrow /></button>{copied && <span className="copy-toast">Email copied!</span>}<div className="socials"><a href="https://www.instagram.com/thee.ow?utm_source=ig_web_button_share_sheet&cplk=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer">Instagram <Arrow /></a><a href="mailto:theochrisxto@gmail.com">Email <Arrow /></a><a href="https://www.linkedin.com/in/theo-christo-629072384" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a></div></div><div className="contact-orb">✦</div></section>
     <footer><a className="brand" href="#home">THEO<span>./</span></a><p>Designed & built with curiosity. © 2026</p><a href="#home">BACK TO TOP ↑</a></footer>
-    <aside className={`theobit-flyer section-${activeSection} hop-${mascotHop % 2} ${isMascotDragging ? 'is-manual-flight' : ''}`} style={mascotPosition ? { left: `${mascotPosition.x}px`, top: `${mascotPosition.y}px`, bottom: 'auto', transform: 'none' } : undefined} aria-label="TheoBit companion"><div className={`theobit-spotify ${musicOpen ? 'is-open' : ''}`} aria-hidden={!musicOpen}><div className="theobit-player-bar"><span className={isPlaying ? 'equalizer active' : 'equalizer'}><i /><i /><i /></span><span>THEOBIT RADIO</span><button className={`mini-play ${isPlaying ? 'is-playing' : ''}`} onClick={togglePlayback} aria-label={isPlaying ? 'Pause music' : 'Play music'} title={isPlaying ? 'Pause music' : 'Play music'}><span aria-hidden="true" /></button></div><div ref={spotifyEmbedRef} className="spotify-embed" /></div><button className={`theobit mood-${mascotStep % 2}`} onClick={handleTheobitClick} onPointerDown={startMascotDrag} onPointerMove={moveMascot} onPointerUp={stopMascotDrag} onPointerCancel={stopMascotDrag} onDoubleClick={() => setMascotPosition(null)} aria-label="Open TheoBit music player, or drag TheoBit to move it" title="Click for music · drag to move · double-click to reset"><span className="mascot-orbit" /><span className="mascot-antenna"><i /></span><span className="mascot-head"><i className="mascot-eye eye-left" /><i className="mascot-eye eye-right" /><b className="mascot-mouth" /></span><span className="mascot-body"><i /><i /><i /></span><span className="mascot-trail" /><span className="mascot-rocket"><i /><i /><i /></span><span className="mascot-spark spark-left">✦</span><span className="mascot-spark spark-right">✦</span></button><p className="mascot-note" role="status">{mascotNotes[mascotStep]} <b>Click for music · drag to move</b></p></aside>
   </main></>
 }
 export default App
