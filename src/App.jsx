@@ -396,7 +396,169 @@ function ProjectPage({ project, isDark, onBack }) {
   </main>
 }
 
-function WorkShowcase({ onOpenProject }) {
+function DraggableProjectRow({ rowIndex, onOpenProject }) {
+  const rowRef = useRef(null)
+  const positionRef = useRef(0)
+  const setWidthRef = useRef(0)
+  const pointerActiveRef = useRef(false)
+  const draggingRef = useRef(false)
+  const didDragRef = useRef(false)
+  const startXRef = useRef(0)
+  const lastXRef = useRef(0)
+  const direction = rowIndex === 1 ? 1 : -1
+
+  const renderPosition = (nextPosition) => {
+    const setWidth = setWidthRef.current
+    let normalizedPosition = nextPosition
+    if (setWidth > 0) {
+      while (normalizedPosition <= -setWidth) normalizedPosition += setWidth
+      while (normalizedPosition > 0) normalizedPosition -= setWidth
+    }
+    positionRef.current = normalizedPosition
+    if (rowRef.current) rowRef.current.style.transform = `translate3d(${normalizedPosition}px, 0, 0)`
+  }
+
+  useEffect(() => {
+    const row = rowRef.current
+    if (!row) return undefined
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let animationFrame
+    let previousTime = performance.now()
+    let initialized = false
+
+    const measure = () => {
+      const previousWidth = setWidthRef.current
+      const nextWidth = row.scrollWidth / 2
+      setWidthRef.current = nextWidth
+      if (!initialized) {
+        positionRef.current = direction > 0 ? -nextWidth : 0
+        initialized = true
+      } else if (previousWidth > 0 && nextWidth !== previousWidth) {
+        positionRef.current = (positionRef.current / previousWidth) * nextWidth
+      }
+      renderPosition(positionRef.current)
+    }
+
+    const animate = (currentTime) => {
+      const elapsed = Math.min((currentTime - previousTime) / 1000, 0.05)
+      previousTime = currentTime
+      if (!pointerActiveRef.current && !reducedMotion) {
+        const speed = direction > 0 ? 48 : 51
+        renderPosition(positionRef.current + direction * speed * elapsed)
+      }
+      animationFrame = window.requestAnimationFrame(animate)
+    }
+
+    measure()
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(row)
+    animationFrame = window.requestAnimationFrame(animate)
+    return () => {
+      resizeObserver.disconnect()
+      window.cancelAnimationFrame(animationFrame)
+    }
+  }, [direction])
+
+  const handlePointerDown = (event) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    pointerActiveRef.current = true
+    draggingRef.current = false
+    didDragRef.current = false
+    startXRef.current = event.clientX
+    lastXRef.current = event.clientX
+  }
+
+  const handlePointerMove = (event) => {
+    if (!pointerActiveRef.current) return
+    const travelled = event.clientX - startXRef.current
+    if (!draggingRef.current && Math.abs(travelled) > 5) {
+      draggingRef.current = true
+      didDragRef.current = true
+      rowRef.current?.classList.add('is-dragging')
+      rowRef.current?.setPointerCapture(event.pointerId)
+    }
+    if (!draggingRef.current) return
+    renderPosition(positionRef.current + event.clientX - lastXRef.current)
+    lastXRef.current = event.clientX
+  }
+
+  const stopDragging = (event) => {
+    pointerActiveRef.current = false
+    draggingRef.current = false
+    rowRef.current?.classList.remove('is-dragging')
+    if (rowRef.current?.hasPointerCapture(event.pointerId)) rowRef.current.releasePointerCapture(event.pointerId)
+    window.setTimeout(() => { didDragRef.current = false }, 80)
+  }
+
+  return <div
+    ref={rowRef}
+    className={`brick-row draggable-marquee row-${rowIndex}`}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onPointerUp={stopDragging}
+    onPointerCancel={stopDragging}
+    style={{ transform: rowIndex === 1 ? 'translate3d(calc(0px - var(--brick-set-width)), 0, 0)' : 'translate3d(0, 0, 0)' }}
+  >
+    {Array.from({ length: 2 }, (_, setIndex) => <div className="brick-set" key={setIndex}>{projects.map((item, itemIndex) => <button type="button" className={`dome-project ${item.accent} ${item.image ? 'has-image' : ''}`} onClick={(event) => { event.stopPropagation(); if (!didDragRef.current) onOpenProject(itemIndex) }} key={`${item.title}-${setIndex}`} aria-label={`Open ${item.title} project details`}><span className="dome-screen">{item.image ? <img className="dome-thumbnail" src={item.image} alt="" draggable="false" /> : <i>{item.mark}</i>}{item.status && <b className="dome-status">{item.status}</b>}<small>{item.title}</small></span></button>)}</div>)}
+  </div>
+}
+
+function AllProjectsPage({ isDark, onBack, onOpenProject }) {
+  const collections = [
+    {
+      label: '01 / CLIENT WORK',
+      title: 'Professional & client projects.',
+      description: 'Digital products developed for real organizations, active users, and evolving operational needs.',
+      titles: ['Eagle Jeans Production Tracking', 'Compassion'],
+    },
+    {
+      label: '02 / INTERNSHIP',
+      title: 'Government system experience.',
+      description: 'Collaborative development work completed during an internship at Diskominfo Kulon Progo.',
+      titles: ['AnjabPro'],
+    },
+    {
+      label: '03 / ACADEMIC WORK',
+      title: 'Campus & thesis projects.',
+      description: 'End-to-end products shaped through coursework, research, product design, and software engineering.',
+      titles: ['ReuseMart', 'FitCatering'],
+    },
+    {
+      label: '04 / COMMUNITY',
+      title: 'Community service project.',
+      description: 'A digital contribution created to help a local community share its identity, activities, and businesses.',
+      titles: ['Padukuhan Pucung'],
+    },
+  ]
+
+  return <main className={`all-projects-page ${isDark ? 'theme-dark' : 'theme-light'}`}>
+    <header className="project-page-nav">
+      <a className="brand" href="#home" onClick={onBack}>THEO<span>./</span></a>
+      <button className="work-back" onClick={onBack}>← Back to selected work</button>
+    </header>
+    <section className="all-projects-hero is-visible">
+      <p className="section-label">PROJECT ARCHIVE / 06 PROJECTS</p>
+      <h1>All projects,<br /><span>clearly organized.</span></h1>
+      <p>A static overview of the projects I’ve built across professional work, internships, academic study, and community service.</p>
+    </section>
+    <div className="project-collections">
+      {collections.map((collection) => {
+        const collectionProjects = collection.titles.map((title) => projects.find((project) => project.title === title)).filter(Boolean)
+        return <section className="project-collection" key={collection.label}>
+          <div className="project-collection-heading"><p className="section-label">{collection.label}</p><h2>{collection.title}</h2><p>{collection.description}</p></div>
+          <div className="all-projects-grid">
+            {collectionProjects.map((project, index) => <button className="all-project-card" type="button" onClick={() => onOpenProject(projectSlug(project.title))} key={project.title}>
+              <span className="all-project-card-media"><img src={project.image} alt={`Preview of ${project.title}`} /><i>{String(index + 1).padStart(2, '0')}</i>{project.status && <b>{project.status}</b>}</span>
+              <span className="all-project-card-body"><small>{project.type}</small><strong>{project.title}</strong><span>{project.description}</span><span className="all-project-card-tags">{project.tags.slice(0, 3).map((tag) => <em key={tag}>{tag}</em>)}</span><span className="all-project-card-link">View project detail <Arrow /></span></span>
+            </button>)}
+          </div>
+        </section>
+      })}
+    </div>
+  </main>
+}
+
+function WorkShowcase({ onOpenProject, onOpenAllProjects }) {
   const [view, setView] = useState('gallery')
   const [selectedProject, setSelectedProject] = useState(null)
   const [activeDetail, setActiveDetail] = useState(0)
@@ -410,8 +572,8 @@ function WorkShowcase({ onOpenProject }) {
   const openPreview = (index) => onOpenProject(projectSlug(projects[index].title))
   const backToGallery = () => { setView('gallery'); setSelectedProject(null) }
 
-  return <section id="work" className={`work section-shell work-${view}`}><div className="section-heading"><div><p className="section-label">03 / SELECTED WORK</p><h2>Projects I’m <span>proud of.</span></h2></div></div>
-    {view === 'gallery' && <div className="project-dome brick-gallery" aria-label="Project gallery"><div className="dome-sphere">{Array.from({ length: 3 }, (_, rowIndex) => <div className={`brick-row row-${rowIndex}`} key={rowIndex}>{Array.from({ length: 2 }, (_, setIndex) => <div className="brick-set" key={setIndex}>{projects.map((item, itemIndex) => <button type="button" className={`dome-project ${item.accent} ${item.image ? 'has-image' : ''}`} onClick={(event) => { event.stopPropagation(); openPreview(itemIndex) }} key={`${item.title}-${setIndex}`} aria-label={`Open ${item.title} project details`}><span className="dome-screen">{item.image ? <img className="dome-thumbnail" src={item.image} alt="" /> : <i>{item.mark}</i>}{item.status && <b className="dome-status">{item.status}</b>}<small>{item.title}</small></span></button>)}</div>)}</div>)}</div><p className="dome-hint">CLICK A PROJECT TO VIEW DETAILS <span>↗</span></p></div>}
+  return <section id="work" className={`work section-shell work-${view}`}><div className="section-heading"><div><p className="section-label">03 / SELECTED WORK</p><h2>Projects I’m <span>proud of.</span></h2></div><button className="all-projects-button" type="button" onClick={onOpenAllProjects}>View all projects <Arrow /></button></div>
+    {view === 'gallery' && <div className="project-dome brick-gallery" aria-label="Project gallery"><div className="dome-sphere">{Array.from({ length: 3 }, (_, rowIndex) => <DraggableProjectRow rowIndex={rowIndex} onOpenProject={openPreview} key={rowIndex} />)}</div><p className="dome-hint">DRAG OR SWIPE · CLICK TO VIEW DETAILS <span>↗</span></p></div>}
     {view === 'preview' && project && <div className="project-preview"><button className="work-back" onClick={backToGallery}>← All projects</button><div className={`preview-art ${project.accent}`}><span>{project.mark}</span><small>{project.type}</small></div><div className="preview-copy"><p className="project-type">SELECTED PROJECT / 0{selectedProject + 1}</p><h3>{project.title}</h3><p>{project.description}</p><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button className="button preview-open" onClick={() => setView('detail')}>Open project detail <Arrow /></button></div></div>}
     {view === 'detail' && project && <div className="project-detail"><button className="work-back" onClick={() => setView('preview')}>← Back to overview</button><div className="detail-deck">{detailCards.map((card, index) => { const position = (index - activeDetail + detailCards.length) % detailCards.length; return <article key={card.label} className={`detail-card ${project.accent} detail-pos-${position}`} onClick={() => setActiveDetail(index)}><p>{card.label}</p><div className="detail-mark">{card.mark}</div><h3>{card.title}</h3><span>{card.text}</span></article> })}</div><div className="work-deck-footer"><div className="deck-pagination">{detailCards.map((card, index) => <button key={card.label} className={index === activeDetail ? 'active' : ''} onClick={() => setActiveDetail(index)} aria-label={`Show ${card.label}`} aria-current={index === activeDetail} />)}</div><div className="deck-controls"><button onClick={() => setActiveDetail((activeDetail - 1 + detailCards.length) % detailCards.length)} aria-label="Previous detail">←</button><button onClick={() => setActiveDetail((activeDetail + 1) % detailCards.length)} aria-label="Next detail">→</button></div></div></div>}
   </section>
@@ -429,13 +591,19 @@ function App() {
   const [introReady, setIntroReady] = useState(false)
   const [introDismissed, setIntroDismissed] = useState(true)
   const [introPull, setIntroPull] = useState(0)
-  const [openedProjectSlug, setOpenedProjectSlug] = useState(() => window.location.hash.replace('#project/', ''))
+  const [openedProjectSlug, setOpenedProjectSlug] = useState(() => window.location.hash.startsWith('#project/') ? window.location.hash.replace('#project/', '') : '')
+  const [showAllProjects, setShowAllProjects] = useState(() => window.location.hash === '#all-projects')
+  const [projectOrigin, setProjectOrigin] = useState('selected')
   const introDragRef = useRef(null)
   const introPullRef = useRef(0)
   const copyEmail = async () => { try { await navigator.clipboard.writeText('theochrisxto@gmail.com') } catch { /* clipboard may be unavailable */ } setCopied(true); setTimeout(() => setCopied(false), 1800) }
   useEffect(() => { const onKey = (event) => event.key === 'Escape' && setMenuOpen(false); window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
   useEffect(() => {
-    const syncProjectRoute = () => setOpenedProjectSlug(window.location.hash.replace('#project/', ''))
+    const syncProjectRoute = () => {
+      const hash = window.location.hash
+      setOpenedProjectSlug(hash.startsWith('#project/') ? hash.replace('#project/', '') : '')
+      setShowAllProjects(hash === '#all-projects')
+    }
     window.addEventListener('hashchange', syncProjectRoute)
     return () => window.removeEventListener('hashchange', syncProjectRoute)
   }, [])
@@ -515,9 +683,31 @@ function App() {
   const returnToSelectedWork = () => {
     window.history.replaceState(null, '', '#work')
     setOpenedProjectSlug('')
+    setShowAllProjects(false)
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({ block: 'start' }))
     })
+  }
+  const openAllProjects = () => {
+    window.history.pushState(null, '', '#all-projects')
+    setShowAllProjects(true)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+  const openProject = (slug, origin = 'selected') => {
+    setProjectOrigin(origin)
+    setShowAllProjects(false)
+    setOpenedProjectSlug(slug)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+  const returnFromProject = () => {
+    if (projectOrigin !== 'all') {
+      returnToSelectedWork()
+      return
+    }
+    window.history.replaceState(null, '', '#all-projects')
+    setOpenedProjectSlug('')
+    setShowAllProjects(true)
+    window.scrollTo({ top: 0, behavior: 'auto' })
   }
   const startIntroPull = (event) => {
     if (!introReady) return
@@ -546,14 +736,15 @@ function App() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
   const openedProject = projects.find((project) => projectSlug(project.title) === openedProjectSlug)
-  if (openedProject) return <ProjectPage project={openedProject} isDark={isDark} onBack={returnToSelectedWork} />
+  if (openedProject) return <ProjectPage project={openedProject} isDark={isDark} onBack={returnFromProject} />
+  if (showAllProjects) return <AllProjectsPage isDark={isDark} onBack={returnToSelectedWork} onOpenProject={(slug) => openProject(slug, 'all')} />
   return <>{!introDismissed && <section className={`intro-loader ${introReady ? 'is-ready' : ''}`} aria-label={introReady ? 'Portfolio is ready. Drag to enter.' : `Loading portfolio: ${introProgress}%`}><div className="intro-loader-content"><p className="intro-brand">THEO<span>./</span></p><p className="intro-kicker">ORA ET LABORA</p><h1>{introReady ? <>Ready to <em>explore?</em></> : <>Building a little <em>magic.</em></>}</h1><p className="intro-copy">Waiting for the portfolio to be ready.</p><div className="intro-progress" aria-hidden="true"><i style={{ '--intro-progress': `${introProgress}%` }} /></div><div className="intro-progress-meta"><span>{introReady ? 'SYSTEM READY' : 'PREPARING PORTFOLIO'}</span><b>{introProgress}%</b></div>{introReady && <button className="intro-pull" style={{ '--intro-pull': `${introPull}%` }} onPointerDown={startIntroPull} onPointerMove={moveIntroPull} onPointerUp={stopIntroPull} onPointerCancel={stopIntroPull} aria-label="Drag right to enter portfolio"><span>DRAG TO ENTER</span><i aria-hidden="true">→</i></button>}</div></section>}<main className={isDark ? 'theme-dark' : 'theme-light'}>
     <div className="ambient-background" aria-hidden="true"><span className="ambient-grid" /><span className="ambient-orb orb-violet" /><span className="ambient-orb orb-lime" /><span className="ambient-ring" /></div>
     <header className="nav-wrap"><a className="brand" href="#home" aria-label="Go to homepage">THEO<span>./</span></a><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Open navigation">{menuOpen ? '×' : '☰'}</button><nav className={menuOpen ? 'nav open' : 'nav'}><a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#tools" onClick={() => setMenuOpen(false)}>Toolbox</a><a href="#work" onClick={() => setMenuOpen(false)}>Work</a><a href="#credentials" onClick={() => setMenuOpen(false)}>Experience</a><button className="theme-toggle" onClick={() => setAppearance(!isDark)} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>{isDark ? '☀ LIGHT' : '☾ DARK'}</button><a className="nav-cta" href="#contact" onClick={() => setMenuOpen(false)}>Let’s talk <Arrow /></a></nav></header>
     <section id="home" className="hero section-shell"><div className="grid-lines" aria-hidden="true" /><div className="hero-copy"><p className="eyebrow"><i /> ORA ET LABORA - BERDOA DAN BEKERJA</p><p className="intro">Hi, I'm Theo —</p><h1>Bringing ideas<br /><em>to life.</em></h1><p className="hero-text">I’m a creative developer who enjoys turning complex problems into digital experiences that are simple, useful, and a little more delightful.</p><div className="hero-actions"><a className="button primary" href="#work">Explore selected work <Arrow /></a><a className="text-link" href="#about">Get to know me <span>↓</span></a></div></div><button className={`hero-art profile-card ${photoMode} ${isPhotoSwitching ? 'is-switching' : ''}`} onClick={switchPhotoMode} aria-label="Switch photo appearance">{previousPhotoMode && <img className={`profile-photo previous ${previousPhotoMode}`} src={previousPhotoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="" aria-hidden="true" onError={(event) => { event.currentTarget.src = heroFallback }} />}<div className="photo-ring ring-one" /><div className="photo-ring ring-two" /><img className={`profile-photo current ${photoMode}`} src={photoMode === 'color' ? '/profile-color.jpeg' : '/profile-mono.jpeg'} alt="Theo" onAnimationEnd={() => { if (isPhotoSwitching) { setIsPhotoSwitching(false); setPreviousPhotoMode(null) } }} onError={(event) => { event.currentTarget.src = heroFallback }} /><span className="photo-badge">{photoMode === 'color' ? 'COLOR MODE' : 'MONO MODE'}</span><span className="photo-hint">CLICK TO SWITCH ↻</span><div className="spark spark-one">✦</div><div className="spark spark-two">✦</div></button><div className="scroll-tag">SCROLL TO EXPLORE <span>↓</span></div></section>
     <section id="about" className="about section-shell"><p className="section-label">01 / ABOUT ME</p><div className="about-grid"><div className="about-intro"><h2>I turn curious questions into <span>useful digital experiences.</span></h2></div><div className="about-copy"><p>I’m Jawara Theo Christo — an Informatics graduate (S.Kom.) from Universitas Atma Jaya Yogyakarta, software developer, UI/UX designer, and full-stack builder based in Yogyakarta, ready to collaborate from anywhere. I learn by building, turning real-world problems into digital experiences that feel simple, useful, and intuitive.</p><p>I’m naturally curious: always experimenting, learning, and refining. I enjoy creating web applications, UI/UX-focused products, internal business systems, and mobile applications with Flutter and Dart that make real workflows clearer and more efficient.</p><div className="about-languages"><span className="about-languages-label">LANGUAGES</span><div className="language-list"><span className="language-item"><strong>Indonesian</strong><small>Native</small></span><span className="language-item"><strong>English</strong><small>Conversational</small></span></div><a className="language-certificate" href="/EnglishScore-Certificate.pdf" target="_blank" rel="noreferrer">View EnglishScore Certificate <Arrow /></a></div><div className="about-actions"><a className="button outline" href="#contact">Let’s build something useful <Arrow /></a><a className="button resume-download" href="/Jawara-Theo-Christo-Resume.pdf" download="Jawara-Theo-Christo-CV.pdf">Download CV <span aria-hidden="true">↓</span></a></div></div></div></section>
     <section id="tools" className="toolbox section-shell"><div className="toolbox-heading"><p className="section-label">02 / TOOLBOX</p><h2>Tools behind the <span>things I build.</span></h2><p>Choose a tool to highlight it. These are living skills — always being sharpened through real projects.</p></div><div className="toolbox-content"><div className="tool-groups">{toolGroups.map((group) => <article className="tool-group" key={group.title}><div className="tool-group-copy"><span>{group.number}</span><h3>{group.title}</h3><p>{group.description}</p></div><div className="tool-buttons">{group.tools.map((tool) => <button className={selectedToolName === tool.name ? 'tool-button selected' : 'tool-button'} onClick={() => setSelectedToolName(tool.name)} aria-pressed={selectedToolName === tool.name} key={tool.name}>{tool.icon ? <img src={`https://cdn.simpleicons.org/${tool.icon}`} alt="" /> : <i aria-hidden="true">{tool.symbol}</i>}<span>{tool.name}</span></button>)}</div></article>)}</div></div></section>
-    <WorkShowcase onOpenProject={setOpenedProjectSlug} />
+    <WorkShowcase onOpenProject={(slug) => openProject(slug, 'selected')} onOpenAllProjects={openAllProjects} />
     <section id="credentials" className="credentials experience section-shell">
       <p className="section-label">04 / EXPERIENCE</p>
       <h2>Learning by <span>building.</span></h2>
