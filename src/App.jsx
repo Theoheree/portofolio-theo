@@ -668,7 +668,7 @@ function App() {
 
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
-  }, [openedProjectSlug])
+  }, [openedProjectSlug, showAllProjects])
   const setAppearance = (darkMode) => {
     const nextPhotoMode = darkMode ? 'mono' : 'color'
     if (isPhotoSwitching || (isDark === darkMode && photoMode === nextPhotoMode)) return
@@ -685,7 +685,11 @@ function App() {
     setOpenedProjectSlug('')
     setShowAllProjects(false)
     window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => document.getElementById('work')?.scrollIntoView({ block: 'start' }))
+      window.requestAnimationFrame(() => {
+        const workSection = document.getElementById('work')
+        workSection?.classList.add('is-visible')
+        workSection?.scrollIntoView({ block: 'start' })
+      })
     })
   }
   const openAllProjects = () => {
